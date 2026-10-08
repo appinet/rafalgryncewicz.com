@@ -4,23 +4,23 @@
 <x-mail::table>
 | | |
 |:--|:--|
-| **Name** | {{ $lead->name }} |
-| **Email** | {{ $lead->email }} |
-| **Company** | {{ $lead->company ?: '–' }} |
-| **Client type** | {{ $lead->client_type ?: '–' }} |
-| **Project** | {{ $lead->project_type }} |
-| **Budget** | {{ $lead->budget ?: '–' }} |
-| **Timeline** | {{ $lead->timeline ?: '–' }} |
+| **Name** | {{ $safe['name'] }} |
+| **Email** | {{ $safe['email'] }} |
+| **Company** | {{ $safe['company'] }} |
+| **Client type** | {{ $safe['client_type'] }} |
+| **Project** | {{ $safe['project_type'] }} |
+| **Budget** | {{ $safe['budget'] }} |
+| **Timeline** | {{ $safe['timeline'] }} |
 | **Language** | {{ strtoupper($lead->locale) }} |
 </x-mail::table>
 
 **Message**
 
-{{ $lead->message }}
+{{ $safe['message'] }}
 
 <x-mail::button :url="'mailto:'.$lead->email">
 Reply to {{ $lead->name }}
 </x-mail::button>
 
-<small>Lead #{{ $lead->id }} · {{ $lead->created_at->toDayDateTimeString() }} · IP {{ $lead->ip }}</small>
+<small>Lead #{{ $lead->id }} · {{ $lead->created_at->toDayDateTimeString() }} · IP {{ $lead->ip ?? '–' }}</small>
 </x-mail::message>

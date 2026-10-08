@@ -50,6 +50,10 @@ export default defineNuxtConfig({
       // Leave empty to ship without any tracking. Set via NUXT_PUBLIC_GTM_ID / NUXT_PUBLIC_GA_ID.
       gtmId: '',
       gaId: '',
+      // Google Consent Mode: 'advanced' (default) loads GTM / gtag right away with everything denied
+      // (cookieless pings until consent); 'basic' loads no Google script at all until the visitor
+      // accepts analytics or marketing. Set via NUXT_PUBLIC_CONSENT_MODE.
+      consentMode: 'advanced',
       // Where the contact form POSTs JSON. Empty = falls back to opening the mail client.
       // Set via NUXT_PUBLIC_FORM_ENDPOINT (e.g. your Laravel endpoint, Formspree, Web3Forms...).
       formEndpoint: '',

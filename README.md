@@ -28,14 +28,16 @@ NUXT_PUBLIC_FORM_ENDPOINT=http://localhost:8000/api/contact npm run dev
 - [ ] `web/app/app.config.ts` → `site`: email, LinkedIn, GitHub, booking link (Cal.com / Calendly), company details for the privacy policy, prices
 - [ ] `web/app/content/en.ts` + `pl.ts` → `work.items`: replace the three draft case studies with real ones
 - [ ] Testimonials / client names in `app.config.ts` (only with permission; the section is hidden while empty)
-- [ ] Regenerate the profile PDF after edits: `cd web && npm run profile`
-- [ ] Choose analytics: GTM / GA4 (`NUXT_PUBLIC_GTM_ID` / `NUXT_PUBLIC_GA_ID`, cookie banner applies) and/or Plausible (`NUXT_PUBLIC_PLAUSIBLE_DOMAIN`, cookieless)
+- [ ] Regenerate the profile PDF after edits: `cd web && npm run profile` (name, email, role and location are read from `app.config.ts` / `content/en.ts`; needs Chromium: `npx playwright install chromium` or `CHROME_PATH`)
+- [ ] Choose analytics: GTM / GA4 (`NUXT_PUBLIC_GTM_ID` / `NUXT_PUBLIC_GA_ID`, cookie banner applies) and/or Plausible (`NUXT_PUBLIC_PLAUSIBLE_DOMAIN`, cookieless). With Google, pick the consent mode: `advanced` (default, tags load at once with storage denied) or `NUXT_PUBLIC_CONSENT_MODE=basic` (no Google request at all before consent; the stricter reading of EU guidance)
 - [ ] Create a Cloudflare Turnstile widget: site key → `NUXT_PUBLIC_TURNSTILE_SITE_KEY`, secret → `api/.env TURNSTILE_SECRET_KEY`
-- [ ] Deploy the API (e.g. `api.rafalgryncewicz.com`), set SMTP in `api/.env`, then `NUXT_PUBLIC_FORM_ENDPOINT=https://api.rafalgryncewicz.com/api/contact`
+- [ ] Deploy the API (e.g. `api.rafalgryncewicz.com`), set SMTP and `CONTACT_RECIPIENT` in `api/.env` (no default: without it leads are stored but not emailed), then `NUXT_PUBLIC_FORM_ENDPOINT=https://api.rafalgryncewicz.com/api/contact`. If it sits behind Cloudflare / a proxy, set `TRUSTED_PROXIES` or the Nginx `realip` block
 - [ ] Uptime monitoring: add `https://rafalgryncewicz.com` and `https://api.rafalgryncewicz.com/up` to UptimeRobot / Better Stack (free tiers are enough)
 - [ ] Submit `https://rafalgryncewicz.com/sitemap.xml` in Google Search Console
 
 ## Deploy (VPS)
 
 * Website: `cd web && npm ci && npm run generate`, upload `web/.output/public`. Nginx example: `web/deploy/nginx.conf`.
+* Website Nginx: copy `web/deploy/security-headers.conf` to `/etc/nginx/snippets/rafalgryncewicz-security-headers.conf` (included by every `location`).
 * API: standard Laravel deploy (PHP-FPM 8.3, `composer install --no-dev -o`, `php artisan migrate --force`, `php artisan config:cache`). Nginx example: `api/deploy/nginx.conf`.
+* API cron (GDPR retention: `leads:anonymize` + `model:prune`, daily): `* * * * * cd /var/www/rafalgryncewicz.com/api && php artisan schedule:run >> /dev/null 2>&1`

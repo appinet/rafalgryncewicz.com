@@ -167,6 +167,7 @@ const pl: Content = {
     book: { title: 'Wolisz porozmawiać?', text: 'Umów bezpłatną 30-minutową rozmowę.', cta: 'Umów rozmowę' },
     channels: { email: 'E-mail', linkedin: 'LinkedIn', linkedinText: 'Dodaj mnie do kontaktów', based: 'Lokalizacja' },
     sent: { title: 'Dziękuję, wiadomość dotarła.', text: 'Odpowiem w ciągu jednego dnia roboczego. W pilnych sprawach napisz na' },
+    mailto: { title: 'Jeszcze jeden krok: wyślij ją ze swojej poczty.', text: 'Powinna otworzyć się gotowa wiadomość e-mail. Jeśli nic się nie stało, napisz bezpośrednio na' },
     failed: 'Nie udało się wysłać wiadomości. Napisz bezpośrednio na',
     fields: {
       name: 'Imię i nazwisko', namePh: 'Jan Kowalski',

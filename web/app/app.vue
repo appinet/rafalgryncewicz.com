@@ -7,6 +7,8 @@ const route = useRoute()
 const gtmId = config.gtmId as string
 const gaId = config.gaId as string
 const plausibleDomain = config.plausibleDomain as string
+// Basic consent mode: Google tags are injected by useConsent() only after consent
+const googleInHead = config.consentMode !== 'basic'
 
 // Google Consent Mode v2 – defaults MUST be declared before any Google tag loads.
 const consentBootstrap = `
@@ -19,13 +21,13 @@ try{var c=JSON.parse(localStorage.getItem('rg_consent'));if(c&&c.v===1&&Date.now
 const scripts: any[] = [
   { key: 'consent-default', innerHTML: consentBootstrap, tagPriority: 'critical' }
 ]
-if (gtmId) {
+if (googleInHead && gtmId) {
   scripts.push({
     key: 'gtm',
     innerHTML: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`
   })
 }
-if (gaId) {
+if (googleInHead && gaId) {
   scripts.push({ key: 'gtag-src', src: `https://www.googletagmanager.com/gtag/js?id=${gaId}`, async: true })
   scripts.push({ key: 'gtag-cfg', innerHTML: `gtag('js',new Date());gtag('config','${gaId}');` })
 }
@@ -69,7 +71,7 @@ useSeoMeta({
 
 <template>
   <div>
-    <noscript v-if="gtmId">
+    <noscript v-if="googleInHead && gtmId">
       <iframe :src="`https://www.googletagmanager.com/ns.html?id=${gtmId}`" height="0" width="0" style="display:none;visibility:hidden" />
     </noscript>
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-black">{{ t.nav.skip }}</a>

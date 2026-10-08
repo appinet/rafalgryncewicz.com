@@ -167,6 +167,8 @@ const en = {
     book: { title: 'Prefer to talk?', text: 'Book a free 30-minute intro call.', cta: 'Book a call' },
     channels: { email: 'Email', linkedin: 'LinkedIn', linkedinText: 'Connect with me', based: 'Based in' },
     sent: { title: 'Thank you, message received.', text: 'I’ll get back to you within one business day. If it’s urgent, email me at' },
+    // Shown when no form endpoint is configured and the message is handed to the visitor's email app
+    mailto: { title: 'Almost there: send it from your email app.', text: 'A pre-filled email should have opened. If nothing happened, please write to me directly at' },
     failed: 'The message could not be sent. Please email me directly at',
     fields: {
       name: 'Name', namePh: 'Jane Smith',

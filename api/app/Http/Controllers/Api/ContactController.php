@@ -32,14 +32,26 @@ class ContactController extends Controller
             'privacy_accepted_at' => now(),
         ]);
 
-        // The lead is already stored, so a mail failure must not lose it or fail the request.
+        $this->notify($lead);
+
+        return response()->json(['ok' => true, 'id' => $lead->id], 201);
+    }
+
+    /** The lead is already stored, so a mail failure must not lose it or fail the request. */
+    private function notify(Lead $lead): void
+    {
+        $recipient = config('contact.recipient');
+        if (blank($recipient)) {
+            Log::warning('Lead notification skipped: CONTACT_RECIPIENT is not set', ['lead_id' => $lead->id]);
+
+            return;
+        }
+
         try {
-            Mail::to(config('contact.recipient'))->send(new NewLeadMail($lead));
+            Mail::to($recipient)->send(new NewLeadMail($lead));
             $lead->forceFill(['notified_at' => now()])->save();
         } catch (Throwable $e) {
             Log::error('Lead notification failed', ['lead_id' => $lead->id, 'error' => $e->getMessage()]);
         }
-
-        return response()->json(['ok' => true, 'id' => $lead->id], 201);
     }
 }

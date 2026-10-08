@@ -27,7 +27,8 @@ return [
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    // Cache the preflight for a day (the JSON POST always triggers one)
+    'max_age' => 86400,
 
     'supports_credentials' => false,
 

@@ -1,8 +1,8 @@
 <?php
 
 return [
-    // Where new leads are emailed
-    'recipient' => env('CONTACT_RECIPIENT', 'hello@rafalgryncewicz.com'),
+    // Where new leads are emailed (required; leads are still stored when it is missing)
+    'recipient' => env('CONTACT_RECIPIENT'),
 
     // Rate limits for POST /api/contact (per IP)
     'per_minute' => (int) env('CONTACT_RATE_PER_MINUTE', 3),

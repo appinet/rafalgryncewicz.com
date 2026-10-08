@@ -2,8 +2,9 @@
  * Cookie consent + Google Consent Mode v2.
  *
  * Defaults (all non-essential storage denied) are set by an inline <head> script in app.vue,
- * before Google Tag Manager / gtag.js loads. This composable only reads/writes the user's choice
- * and sends `gtag('consent', 'update', …)`.
+ * before Google Tag Manager / gtag.js loads. This composable reads/writes the user's choice and
+ * sends `gtag('consent', 'update', …)`. In basic consent mode it also loads the Google tags, and
+ * only once analytics or marketing has been accepted.
  */
 export interface ConsentChoice {
   analytics: boolean
@@ -42,7 +43,34 @@ function read(): StoredConsent | null {
   }
 }
 
+let googleLoaded = false
+
+/** Basic consent mode: inject GTM / gtag.js after consent (advanced mode has them in <head> already). */
+function loadGoogleTags(c: ConsentChoice, ids: { gtmId: string, gaId: string }) {
+  if (googleLoaded || !(c.analytics || c.marketing) || !(ids.gtmId || ids.gaId)) return
+  googleLoaded = true
+  const w = window as any
+  const add = (src: string) => {
+    const s = document.createElement('script')
+    s.async = true
+    s.src = src
+    document.head.appendChild(s)
+  }
+  if (ids.gtmId) {
+    w.dataLayer.push({ 'gtm.start': Date.now(), 'event': 'gtm.js' })
+    add(`https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(ids.gtmId)}`)
+  }
+  if (ids.gaId) {
+    w.gtag('js', new Date())
+    w.gtag('config', ids.gaId)
+    add(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ids.gaId)}`)
+  }
+}
+
 export function useConsent() {
+  const config = useRuntimeConfig().public
+  const basicMode = config.consentMode === 'basic'
+  const googleIds = { gtmId: config.gtmId as string, gaId: config.gaId as string }
   const choice = useState<ConsentChoice | null>('consent-choice', () => null)
   const bannerOpen = useState('consent-banner', () => false)
   const settingsOpen = useState('consent-settings', () => false)
@@ -51,6 +79,7 @@ export function useConsent() {
     const stored = read()
     choice.value = stored ? { analytics: stored.analytics, marketing: stored.marketing } : null
     bannerOpen.value = !stored
+    if (basicMode && stored) loadGoogleTags(stored, googleIds)
   }
 
   function save(c: ConsentChoice) {
@@ -64,6 +93,7 @@ export function useConsent() {
     w.dataLayer = w.dataLayer || []
     if (typeof w.gtag === 'function') w.gtag('consent', 'update', toGoogleConsent(c))
     w.dataLayer.push({ event: 'consent_update', consent_analytics: c.analytics, consent_marketing: c.marketing })
+    if (basicMode) loadGoogleTags(c, googleIds)
 
     bannerOpen.value = false
     settingsOpen.value = false

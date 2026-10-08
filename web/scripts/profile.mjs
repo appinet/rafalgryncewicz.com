@@ -10,14 +10,20 @@ const geist = font('@fontsource-variable/geist/files/geist-latin-wght-normal.wof
 const geistExt = font('@fontsource-variable/geist/files/geist-latin-ext-wght-normal.woff2')
 const serif = font('@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2')
 
+// Name, contact details and role come from the site's own config / copy, so the PDF never drifts
+// from the website. (app.config.ts calls Nuxt's global defineAppConfig, stubbed here.)
+globalThis.defineAppConfig = (config) => config
+const { site: config } = (await import('../app/app.config.ts')).default
+const { meta } = (await import('../app/content/en.ts')).default
 const site = {
-  name: 'Rafał Gryncewicz',
-  role: 'Senior Full-Stack Developer & Linux Engineer',
-  email: 'hello@rafalgryncewicz.com',
+  name: config.name,
+  role: meta.role,
+  email: config.email,
   web: 'rafalgryncewicz.com',
-  location: 'Poland · CET (UTC+1) · EN / PL'
+  location: `${config.location} · EN / PL`
 }
 
+// Condensed copy for the one-page print layout (the website versions are longer)
 const services = [
   ['Web applications', 'Custom systems, SaaS, client portals and internal tools in Laravel / PHP with tests and documentation.'],
   ['Front-end & UI', 'Vue 3, Nuxt, Nuxt UI and Tailwind CSS. Mobile first, accessible, tuned for Core Web Vitals.'],

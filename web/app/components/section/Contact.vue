@@ -20,6 +20,8 @@ const state = reactive({
 })
 const loading = ref(false)
 const sent = ref(false)
+// 'mailto' = no form endpoint: the message was only handed to the visitor's email app, not delivered
+const sentVia = ref<'api' | 'mailto'>('api')
 // Why the last submit failed: rejected input (422), rate limited (429) or anything else (network, 5xx)
 const failure = ref<'' | 'invalid' | 'rateLimited' | 'generic'>('')
 const form = useTemplateRef('form')
@@ -91,12 +93,13 @@ async function onSubmit(event: FormSubmitEvent<typeof state>) {
         `Client: ${data.clientType || '-'}`, `Project: ${data.projectType}`, `Budget: ${data.budget || '-'}`,
         `Timeline: ${data.timeline || '-'}`, '', data.message
       ].join('\n')
+      sentVia.value = 'mailto'
       window.location.href = `mailto:${site.email}?subject=${encodeURIComponent(`${c.value.mailSubject}: ${data.projectType}`)}&body=${encodeURIComponent(body)}`
     }
     sent.value = true
     const w = window as any
-    w.dataLayer?.push({ event: 'generate_lead', form: 'contact', project_type: data.projectType, locale: locale.value })
-    w.plausible?.('Lead', { props: { project_type: data.projectType } })
+    w.dataLayer?.push({ event: 'generate_lead', form: 'contact', method: sentVia.value, project_type: data.projectType, locale: locale.value })
+    w.plausible?.('Lead', { props: { project_type: data.projectType, method: sentVia.value } })
   } catch (err: any) {
     showServerError(err?.statusCode ?? err?.status, err?.data?.errors)
     // A Turnstile token is single-use, so get a new one for the retry
@@ -168,9 +171,9 @@ const inputUi = { base: 'bg-white/[0.03] ring-white/10 text-white placeholder:te
 
       <div v-reveal="100" class="card p-6 sm:p-9">
         <div v-if="sent" class="flex min-h-[28rem] flex-col items-center justify-center text-center" role="status">
-          <div class="flex size-14 items-center justify-center rounded-full bg-emerald-400/10"><UIcon name="i-lucide-check" class="size-7 text-emerald-400" /></div>
-          <h3 class="mt-6 text-2xl font-semibold tracking-tight text-white">{{ c.sent.title }}</h3>
-          <p class="mt-3 max-w-sm text-zinc-400">{{ c.sent.text }} <a :href="`mailto:${site.email}`" class="text-white underline underline-offset-2">{{ site.email }}</a>.</p>
+          <div class="flex size-14 items-center justify-center rounded-full bg-emerald-400/10"><UIcon :name="sentVia === 'mailto' ? 'i-lucide-mail' : 'i-lucide-check'" class="size-7 text-emerald-400" /></div>
+          <h3 class="mt-6 text-2xl font-semibold tracking-tight text-white">{{ (sentVia === 'mailto' ? c.mailto : c.sent).title }}</h3>
+          <p class="mt-3 max-w-sm text-zinc-400">{{ (sentVia === 'mailto' ? c.mailto : c.sent).text }} <a :href="`mailto:${site.email}`" class="text-white underline underline-offset-2">{{ site.email }}</a>.</p>
         </div>
 
         <UForm v-else ref="form" :state="state" :validate="validate" :validate-on="['input']" class="grid gap-5 sm:grid-cols-2" @submit="onSubmit" @error="attempted = true">

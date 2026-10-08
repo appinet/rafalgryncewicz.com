@@ -99,6 +99,35 @@ class ContactEndpointTest extends TestCase
         $this->assertNull(Lead::sole()->notified_at);
     }
 
+    public function test_lead_is_kept_without_a_configured_recipient(): void
+    {
+        Mail::fake();
+        config(['contact.recipient' => null]);
+
+        $this->postJson('/api/contact', $this->payload())->assertCreated();
+
+        $this->assertNull(Lead::sole()->notified_at);
+        Mail::assertNothingSent();
+    }
+
+    public function test_visitor_input_cannot_inject_markdown_into_the_mail(): void
+    {
+        $lead = Lead::create([
+            'name' => 'Eve | Admin', 'email' => 'eve@example.com', 'project_type' => 'Web application',
+            'message' => "Hi [click here](https://phish.example) and **urgent**\n<script>x</script>\nsecond line",
+            'privacy_accepted_at' => now(),
+        ]);
+
+        $html = (new NewLeadMail($lead))->render();
+
+        $this->assertStringNotContainsString('href="https://phish.example"', $html);
+        $this->assertStringNotContainsString('<strong>urgent</strong>', $html);
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringContainsString('[click here](https://phish.example)', $html);
+        $this->assertStringContainsString('Eve | Admin', $html);
+        $this->assertStringContainsString('<br', $html);
+    }
+
     public function test_cors_allows_the_site_origin(): void
     {
         config(['cors.allowed_origins' => ['https://rafalgryncewicz.com']]);
