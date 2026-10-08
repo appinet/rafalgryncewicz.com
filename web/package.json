@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
-    "generate": "nuxt generate",
+    "generate": "nuxt generate && node scripts/csp.mjs",
+    "csp": "node scripts/csp.mjs",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "profile": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/profile.mjs"

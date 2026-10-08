@@ -223,7 +223,15 @@ const en = {
     }
   },
   legal: { back: 'Back to home', updated: 'Last updated', privacyTitle: 'Privacy policy', cookiesTitle: 'Cookie policy', change: 'Change cookie settings' },
-  lang: { label: 'Language', switchTo: 'Polski', short: 'PL' }
+  lang: { label: 'Language', switchTo: 'Polski', short: 'PL' },
+  error: {
+    notFound: 'Page not found',
+    notFoundText: 'The page you are looking for doesn’t exist or has moved.',
+    generic: 'Something went wrong',
+    genericText: 'An unexpected error occurred. Please try again in a moment.',
+    home: 'Back to home',
+    contact: 'Contact me'
+  }
 }
 
 export default en

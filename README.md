@@ -39,5 +39,6 @@ NUXT_PUBLIC_FORM_ENDPOINT=http://localhost:8000/api/contact npm run dev
 
 * Website: `cd web && npm ci && npm run generate`, upload `web/.output/public`. Nginx example: `web/deploy/nginx.conf`.
 * Website Nginx: copy `web/deploy/security-headers.conf` to `/etc/nginx/snippets/rafalgryncewicz-security-headers.conf` (included by every `location`).
+* CSP: `npm run generate` also writes `web/.output/nginx/csp.conf` (`scripts/csp.mjs`): a `Content-Security-Policy-Report-Only` header with SHA-256 hashes of the inline scripts and only the third-party hosts that are configured. The hashes change with every build, so copy it to `/etc/nginx/snippets/rafalgryncewicz-csp.conf` and `nginx -s reload` **on every deploy**. Violation reports go to `CSP_REPORT_URI` (default: `<form endpoint origin>/api/csp-report`, logged by the API to `storage/logs/csp.log`, 14 days). After a few clean weeks of reports, build with `CSP_ENFORCE=1` to switch to the enforcing header.
 * API: standard Laravel deploy (PHP-FPM 8.3, `composer install --no-dev -o`, `php artisan migrate --force`, `php artisan config:cache`). Nginx example: `api/deploy/nginx.conf`.
 * API cron (GDPR retention: `leads:anonymize` + `model:prune`, daily): `* * * * * cd /var/www/rafalgryncewicz.com/api && php artisan schedule:run >> /dev/null 2>&1`

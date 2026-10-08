@@ -222,7 +222,15 @@ const pl: Content = {
     }
   },
   legal: { back: 'Wróć na stronę główną', updated: 'Ostatnia aktualizacja', privacyTitle: 'Polityka prywatności', cookiesTitle: 'Polityka cookies', change: 'Zmień ustawienia cookies' },
-  lang: { label: 'Język', switchTo: 'English', short: 'EN' }
+  lang: { label: 'Język', switchTo: 'English', short: 'EN' },
+  error: {
+    notFound: 'Nie znaleziono strony',
+    notFoundText: 'Strona, której szukasz, nie istnieje albo została przeniesiona.',
+    generic: 'Coś poszło nie tak',
+    genericText: 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę.',
+    home: 'Wróć na stronę główną',
+    contact: 'Napisz do mnie'
+  }
 }
 
 export default pl
