@@ -62,3 +62,5 @@ A successful form submission pushes `{ event: 'generate_lead', project_type, loc
 
 Upload `.output/public` to any static host (Nginx on your VPS, Cloudflare Pages, Netlify…).
 Example Nginx vhost with caching, compression and security headers: `deploy/nginx.conf`.
+On Apache / LiteSpeed hosting nothing extra is needed: the build includes `.htaccess` files generated from `deploy/apache.htaccess` (see `../docs/deploy-cyberfolks.md`).
+Build settings (form endpoint, Turnstile, analytics, CSP) go in `.env`, see `.env.example`.

@@ -1,0 +1,72 @@
+# Apache / LiteSpeed rules for the static site (shared hosting, e.g. cyber_Folks).
+# Template: `npm run generate` copies it to .output/public/.htaccess and fills in the CSP line,
+# so upload the generated file, not this one. Same behaviour as deploy/nginx.conf.
+
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+AddDefaultCharset UTF-8
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # www → apex, HTTP → HTTPS (only for the real domain, so local tests keep working)
+  RewriteCond %{HTTP_HOST} ^www\.rafalgryncewicz\.com$ [NC]
+  RewriteRule ^ https://rafalgryncewicz.com%{REQUEST_URI} [L,R=301]
+  RewriteCond %{HTTP_HOST} ^rafalgryncewicz\.com$ [NC]
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^ https://rafalgryncewicz.com%{REQUEST_URI} [L,R=301]
+
+  # Pages live in folders (privacy/index.html) but their canonical URL has no trailing slash:
+  # /privacy/ → 301 → /privacy, and /privacy is served from privacy/index.html without a redirect.
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^(.+)/$ /$1 [R=301,L]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteCond %{REQUEST_FILENAME}/index.html -f
+  RewriteRule ^(.+)$ $1/index.html [L]
+</IfModule>
+
+# Needed for the no-trailing-slash URLs above (safe: directory listings are off)
+<IfModule mod_dir.c>
+  DirectorySlash Off
+</IfModule>
+
+<IfModule mod_mime.c>
+  AddType application/javascript .js .mjs
+  AddType application/json .json
+  AddType image/svg+xml .svg
+  AddType font/woff2 .woff2
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain application/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Security headers (same as deploy/security-headers.conf)
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set X-Frame-Options "DENY"
+
+  # Images and fonts: 30 days (hashed /_nuxt/ assets get a year from _nuxt/.htaccess)
+  <FilesMatch "\.(png|svg|ico|webp|woff2|pdf)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+
+  # HTML: always revalidate, plus the Content-Security-Policy generated for this build
+  <FilesMatch "\.(html|xml)$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    # @CSP@
+  </FilesMatch>
+</IfModule>
+
+# Never serve dotfiles (this file included)
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>

@@ -35,6 +35,11 @@ NUXT_PUBLIC_FORM_ENDPOINT=http://localhost:8000/api/contact npm run dev
 - [ ] Uptime monitoring: add `https://rafalgryncewicz.com` and `https://api.rafalgryncewicz.com/up` to UptimeRobot / Better Stack (free tiers are enough)
 - [ ] Submit `https://rafalgryncewicz.com/sitemap.xml` in Google Search Console
 
+## Deploy (shared hosting)
+
+Step-by-step guide for cyber_Folks (DirectAdmin, Apache / LiteSpeed, SSH): [`docs/deploy-cyberfolks.md`](docs/deploy-cyberfolks.md) (in Polish).
+`npm run generate` writes the Apache rules (`.htaccess` with clean URLs, 404, security headers, caching and the CSP) into `web/.output/public`, so the build works on any Apache / LiteSpeed host as uploaded.
+
 ## Deploy (VPS)
 
 * Website: `cd web && npm ci && npm run generate`, upload `web/.output/public`. Nginx example: `web/deploy/nginx.conf`.
