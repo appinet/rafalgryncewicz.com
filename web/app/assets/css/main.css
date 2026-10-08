@@ -1,0 +1,130 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, 'Cascadia Mono', 'Roboto Mono', Consolas, monospace;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+}
+
+:root {
+  --ui-radius: 0.625rem;
+  --ui-bg: #09090b;
+  --ui-bg-muted: #111113;
+  --ui-bg-elevated: #151518;
+  --ui-border: rgb(255 255 255 / 0.08);
+  --ui-border-accented: rgb(255 255 255 / 0.14);
+}
+
+.dark {
+  --ui-bg: #09090b;
+  --ui-bg-muted: #111113;
+  --ui-bg-elevated: #151518;
+  --ui-border: rgb(255 255 255 / 0.08);
+  --ui-border-accented: rgb(255 255 255 / 0.14);
+  --ui-text-dimmed: var(--color-zinc-400);
+  --ui-text-muted: var(--color-zinc-400);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+  -webkit-text-size-adjust: 100%;
+  background: #09090b;
+}
+
+body {
+  overflow-x: clip;
+  @apply bg-(--ui-bg) text-zinc-300 antialiased;
+  font-feature-settings: 'ss01', 'cv11';
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: rgb(52 211 153 / 0.3); color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------- Building blocks ---------- */
+@utility container-page {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @media (width >= 40rem) { padding-inline: 2rem; }
+}
+
+@utility eyebrow {
+  @apply inline-flex items-center gap-2 font-mono text-[0.72rem] uppercase tracking-[0.18em] text-emerald-400;
+}
+
+@utility heading-xl {
+  @apply text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.035em] text-white sm:text-6xl lg:text-[5.25rem];
+}
+
+@utility heading-lg {
+  @apply text-3xl leading-[1.08] font-semibold tracking-[-0.03em] text-white sm:text-4xl lg:text-5xl;
+}
+
+@utility card {
+  @apply relative rounded-2xl border border-white/[0.07] bg-white/[0.025] backdrop-blur-sm;
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+}
+
+.serif-accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.text-gradient {
+  background: linear-gradient(180deg, #fff 30%, rgb(255 255 255 / 0.55));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+
+.glow {
+  background: radial-gradient(closest-side, rgb(16 185 129 / 0.22), transparent);
+  filter: blur(20px);
+}
+
+/* Card spotlight follows the pointer (set by v-spotlight directive) */
+.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(52 211 153 / 0.08), transparent 40%);
+}
+.spotlight:hover::before { opacity: 1; }
+
+/* Reveal on scroll */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s cubic-bezier(.2,.7,.2,1), transform 0.7s cubic-bezier(.2,.7,.2,1); }
+.reveal.is-visible { opacity: 1; transform: none; }
+.no-js .reveal, .reveal-off .reveal { opacity: 1; transform: none; }
+
+/* Marquee */
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee { animation: marquee 40s linear infinite; }
+.marquee-wrap:hover .marquee { animation-play-state: paused; }
+
+@keyframes blink { 50% { opacity: 0; } }
+.caret { animation: blink 1.1s steps(1) infinite; }
+
+@keyframes pulse-dot { 0%, 100% { box-shadow: 0 0 0 0 rgb(52 211 153 / 0.6); } 50% { box-shadow: 0 0 0 6px rgb(52 211 153 / 0); } }
+.pulse-dot { animation: pulse-dot 2.2s ease-in-out infinite; }
