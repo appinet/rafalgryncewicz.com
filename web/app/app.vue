@@ -1,4 +1,4 @@
-  <script setup lang="ts">
+<script setup lang="ts">
 const config = useRuntimeConfig().public
 const site = useAppConfig().site
 const { t, locale, alternate } = useContent()
