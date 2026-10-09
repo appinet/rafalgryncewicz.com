@@ -30,7 +30,8 @@ Docelowo:
    ssh LOGIN@rafalgryncewicz.com -p 222
    ```
    Hasło jak do panelu. Zalecane: [logowanie kluczem](https://cyberfolks.pl/pomoc/logowanie-ssh-z-uzyciem-klucza/).
-5. **Poczta**: załóż skrzynkę nadawczą, np. `no-reply@rafalgryncewicz.com` (dane SMTP są w panelu poczty).
+5. **Poczta**: załóż skrzynkę nadawczą, np. `no-reply@rafalgryncewicz.com` (dane SMTP są w panelu poczty),
+   i sprawdź rekordy DNS, bez których maile z formularza trafiają do spamu (sekcja [Poczta: SPF, DKIM, DMARC](#poczta-spf-dkim-dmarc)).
 6. *(opcjonalnie)* **Baza MySQL**: tylko jeśli nie chcesz SQLite (domyślnie wystarczy SQLite, zero konfiguracji).
 
 ## 2. SSH: PHP i Composer
@@ -149,6 +150,30 @@ W panelu *Zadania Cron* dodaj zadanie **co 5 minut** (`*/5 * * * *`; wystarczy d
 `LOGIN` = Twój login (`echo $HOME` w SSH pokaże pełną ścieżkę). Co 15 minut uruchamia `leads:renotify` (ponawia maile, których nie udało się wysłać, z ostatnich 7 dni), raz dziennie `leads:anonymize` i `model:prune`.
 Sprawdzenie: `$PHP artisan schedule:list`.
 
+### Poczta: SPF, DKIM, DMARC
+
+Maile wychodzą z `no-reply@rafalgryncewicz.com` przez SMTP cyber_Folks. Żeby Gmail czy Outlook nie wrzucały ich
+do spamu (od 2024 r. bez SPF/DKIM/DMARC często wręcz odrzucają), domena potrzebuje trzech rekordów TXT.
+Ustawia się je tam, gdzie jest strefa DNS domeny: w panelu cyber_Folks (*Zarządzanie DNS*) albo w Cloudflare,
+jeśli domena tam wskazuje (wtedy rekordy z panelu cyber_Folks trzeba przepisać do Cloudflare ręcznie).
+
+| Rekord | Nazwa | Wartość |
+| --- | --- | --- |
+| SPF | `rafalgryncewicz.com` | `v=spf1 … ~all` z serwerami cyber_Folks: panel zwykle tworzy go sam; ma być **jeden** rekord SPF (kolejne usługi, np. Google Workspace, dopisuje się do niego jako `include:`) |
+| DKIM | `x._domainkey.rafalgryncewicz.com` (selektor zależy od panelu) | klucz publiczny: włącz DKIM dla domeny w ustawieniach poczty DirectAdmin, panel wygeneruje rekord |
+| DMARC | `_dmarc.rafalgryncewicz.com` | na start `v=DMARC1; p=none; rua=mailto:hello@rafalgryncewicz.com` (tylko raporty); po kilku tygodniach bez problemów `p=quarantine` |
+
+Sprawdzenie (zmiany w DNS mogą potrzebować do kilku godzin):
+
+```bash
+dig +short TXT rafalgryncewicz.com | grep spf1
+dig +short TXT _dmarc.rafalgryncewicz.com
+```
+
+Najprościej: wyślij mail z formularza (albo `Mail::raw` z sekcji [Problemy](#problemy)) na adres z
+[mail-tester.com](https://www.mail-tester.com). Wynik 9/10 lub więcej i zielone SPF, DKIM, DMARC oznaczają, że jest dobrze.
+W Gmailu: *Pokaż oryginał* przy odebranym mailu musi pokazać `SPF: PASS`, `DKIM: PASS`, `DMARC: PASS`.
+
 ### Test API
 
 ```bash
@@ -206,7 +231,8 @@ curl -sI https://rafalgryncewicz.com/ | grep -iE 'content-security|strict-transp
 curl -sI https://rafalgryncewicz.com/.htaccess | head -1       # 403
 ```
 
-Na koniec wyślij testowe zapytanie z formularza i sprawdź, czy mail dotarł na `CONTACT_RECIPIENT`.
+Na koniec wyślij testowe zapytanie z formularza i sprawdź, czy mail dotarł na `CONTACT_RECIPIENT`
+(do skrzynki odbiorczej, nie do spamu; jeśli do spamu, wróć do [SPF, DKIM, DMARC](#poczta-spf-dkim-dmarc)).
 
 ## 5. Aktualizacje
 

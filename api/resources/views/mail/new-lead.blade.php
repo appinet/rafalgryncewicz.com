@@ -22,5 +22,6 @@
 Reply to {{ $lead->name }}
 </x-mail::button>
 
-<small>Lead #{{ $lead->id }} · {{ $lead->created_at->toDayDateTimeString() }} · IP {{ $lead->ip ?? '–' }}</small>
+{{-- No IP here: the privacy policy keeps IPs for 30 days (`leads:anonymize`), a mailbox keeps them forever --}}
+<small>Lead #{{ $lead->id }} · {{ $lead->created_at->toDayDateTimeString() }}</small>
 </x-mail::message>

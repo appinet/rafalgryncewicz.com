@@ -136,6 +136,16 @@ class ContactEndpointTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    public function test_mail_does_not_contain_the_visitor_ip(): void
+    {
+        $lead = Lead::create([
+            'name' => 'Jane Tester', 'email' => 'jane@example.com', 'project_type' => 'Web application',
+            'message' => 'We need a PrestaShop to ERP integration.', 'ip' => '203.0.113.7', 'privacy_accepted_at' => now(),
+        ]);
+
+        $this->assertStringNotContainsString('203.0.113.7', (new NewLeadMail($lead))->render());
+    }
+
     public function test_visitor_input_cannot_inject_markdown_into_the_mail(): void
     {
         $lead = Lead::create([

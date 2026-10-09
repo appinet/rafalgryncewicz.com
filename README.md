@@ -32,6 +32,7 @@ NUXT_PUBLIC_FORM_ENDPOINT=http://localhost:8000/api/contact npm run dev
 - [ ] Choose analytics: GTM / GA4 (`NUXT_PUBLIC_GTM_ID` / `NUXT_PUBLIC_GA_ID`, cookie banner applies) and/or Plausible (`NUXT_PUBLIC_PLAUSIBLE_DOMAIN`, cookieless). With Google, pick the consent mode: `advanced` (default, tags load at once with storage denied) or `NUXT_PUBLIC_CONSENT_MODE=basic` (no Google request at all before consent; the stricter reading of EU guidance)
 - [ ] Create a Cloudflare Turnstile widget: site key → `NUXT_PUBLIC_TURNSTILE_SITE_KEY`, secret → `api/.env TURNSTILE_SECRET_KEY`
 - [ ] Deploy the API (e.g. `api.rafalgryncewicz.com`), set SMTP and `CONTACT_RECIPIENT` in `api/.env` (no default: without it leads are stored but not emailed), then `NUXT_PUBLIC_FORM_ENDPOINT=https://api.rafalgryncewicz.com/api/contact`. If it sits behind Cloudflare / a proxy, set `TRUSTED_PROXIES` or the Nginx `realip` block
+- [ ] Mail deliverability: SPF, DKIM and DMARC records for the sending domain, then a 9/10+ score on mail-tester.com (see the deploy guide)
 - [ ] Uptime monitoring: add `https://rafalgryncewicz.com` and `https://api.rafalgryncewicz.com/up` to UptimeRobot / Better Stack (free tiers are enough)
 - [ ] Submit `https://rafalgryncewicz.com/sitemap.xml` in Google Search Console
 
