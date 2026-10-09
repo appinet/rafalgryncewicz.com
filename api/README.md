@@ -12,6 +12,7 @@ JSON body: `name`, `email`, `company?`, `clientType?`, `projectType`, `budget?`,
 * `429` – rate limited (`CONTACT_RATE_PER_MINUTE`, `CONTACT_RATE_PER_DAY` per IP)
 
 If sending the email fails, the lead is still saved (`notified_at` stays `null`) and the error is logged.
+`leads:renotify` (scheduled every 15 minutes) retries leads from the last 7 days that were not emailed yet.
 
 ## Configuration (`.env`)
 
@@ -20,7 +21,7 @@ If sending the email fails, the lead is still saved (`notified_at` stays `null`)
 | `CONTACT_RECIPIENT` | Where leads are emailed |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated origins allowed to call the API (the website) |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret; empty disables the check |
-| `MAIL_*` | SMTP settings |
+| `MAIL_*` | SMTP settings (`MAIL_TIMEOUT`: seconds, default 10) |
 | `DB_*` | SQLite by default; MySQL works too |
 
 ## Development

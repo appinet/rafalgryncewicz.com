@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use App\Mail\NewLeadMail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class Lead extends Model
 {
@@ -21,6 +25,31 @@ class Lead extends Model
             'privacy_accepted_at' => 'datetime',
             'notified_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Emails the lead to CONTACT_RECIPIENT and marks it notified. The lead is already stored, so a
+     * mail failure is only logged (`leads:renotify` retries it) and never thrown.
+     */
+    public function sendNotification(): bool
+    {
+        $recipient = config('contact.recipient');
+        if (blank($recipient)) {
+            Log::warning('Lead notification skipped: CONTACT_RECIPIENT is not set', ['lead_id' => $this->id]);
+
+            return false;
+        }
+
+        try {
+            Mail::to($recipient)->send(new NewLeadMail($this));
+            $this->forceFill(['notified_at' => now()])->save();
+
+            return true;
+        } catch (Throwable $e) {
+            Log::error('Lead notification failed', ['lead_id' => $this->id, 'error' => $e->getMessage()]);
+
+            return false;
+        }
     }
 
     /** Deleted by `php artisan model:prune` (scheduled daily) once the retention period is over. */

@@ -4,12 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ContactRequest;
-use App\Mail\NewLeadMail;
 use App\Models\Lead;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use Throwable;
 
 class ContactController extends Controller
 {
@@ -32,26 +28,9 @@ class ContactController extends Controller
             'privacy_accepted_at' => now(),
         ]);
 
-        $this->notify($lead);
+        // A failed mail is retried by `leads:renotify`, so the visitor still gets a success response
+        $lead->sendNotification();
 
         return response()->json(['ok' => true, 'id' => $lead->id], 201);
-    }
-
-    /** The lead is already stored, so a mail failure must not lose it or fail the request. */
-    private function notify(Lead $lead): void
-    {
-        $recipient = config('contact.recipient');
-        if (blank($recipient)) {
-            Log::warning('Lead notification skipped: CONTACT_RECIPIENT is not set', ['lead_id' => $lead->id]);
-
-            return;
-        }
-
-        try {
-            Mail::to($recipient)->send(new NewLeadMail($lead));
-            $lead->forceFill(['notified_at' => now()])->save();
-        } catch (Throwable $e) {
-            Log::error('Lead notification failed', ['lead_id' => $lead->id, 'error' => $e->getMessage()]);
-        }
     }
 }

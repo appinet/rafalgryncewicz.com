@@ -99,6 +99,32 @@ class ContactEndpointTest extends TestCase
         $this->assertNull(Lead::sole()->notified_at);
     }
 
+    public function test_failed_notifications_are_retried(): void
+    {
+        Mail::fake();
+        // Stored but not emailed, as after an SMTP failure
+        $lead = function ($createdAt) {
+            $lead = Lead::create([
+                'name' => 'Jane Tester', 'email' => 'jane@example.com', 'project_type' => 'Web application',
+                'message' => 'We need a PrestaShop to ERP integration.', 'privacy_accepted_at' => now(),
+            ]);
+            $lead->forceFill(['created_at' => $createdAt])->save();
+
+            return $lead;
+        };
+        $failed = $lead(now()->subHour());
+        $recent = $lead(now()->subMinute());
+        $stale = $lead(now()->subDays(8));
+
+        $this->artisan('leads:renotify')->assertSuccessful();
+
+        Mail::assertSentCount(1);
+        Mail::assertSent(NewLeadMail::class, fn ($mail) => $mail->lead->is($failed));
+        $this->assertNotNull($failed->fresh()->notified_at);
+        $this->assertNull($recent->fresh()->notified_at);
+        $this->assertNull($stale->fresh()->notified_at);
+    }
+
     public function test_lead_is_kept_without_a_configured_recipient(): void
     {
         Mail::fake();

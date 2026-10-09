@@ -124,6 +124,7 @@ MAIL_USERNAME=no-reply@rafalgryncewicz.com
 MAIL_PASSWORD=
 MAIL_FROM_ADDRESS=no-reply@rafalgryncewicz.com
 MAIL_FROM_NAME="rafalgryncewicz.com"
+MAIL_TIMEOUT=10                 # sekundy; po tym czasie formularz i tak zapisze zapytanie
 
 CONTACT_RECIPIENT=hello@rafalgryncewicz.com   # dokąd idą zapytania (wymagane)
 CONTACT_RATE_PER_MINUTE=3
@@ -137,7 +138,7 @@ TRUSTED_PROXIES=                # puste; ustaw tylko, jeśli domena idzie przez 
 
 Po każdej zmianie `.env`: `$PHP artisan config:cache`.
 
-### Cron (retencja RODO)
+### Cron (ponowna wysyłka maili, retencja RODO)
 
 W panelu *Zadania Cron* dodaj zadanie **co 5 minut** (`*/5 * * * *`; wystarczy dowolny interwał, który trafia w pełną godzinę):
 
@@ -145,7 +146,7 @@ W panelu *Zadania Cron* dodaj zadanie **co 5 minut** (`*/5 * * * *`; wystarczy d
 /opt/alt/php83/usr/bin/php /home/LOGIN/domains/api.rafalgryncewicz.com/repo/api/artisan schedule:run >> /dev/null 2>&1
 ```
 
-`LOGIN` = Twój login (`echo $HOME` w SSH pokaże pełną ścieżkę). Raz dziennie uruchamia `leads:anonymize` i `model:prune`.
+`LOGIN` = Twój login (`echo $HOME` w SSH pokaże pełną ścieżkę). Co 15 minut uruchamia `leads:renotify` (ponawia maile, których nie udało się wysłać, z ostatnich 7 dni), raz dziennie `leads:anonymize` i `model:prune`.
 Sprawdzenie: `$PHP artisan schedule:list`.
 
 ### Test API
@@ -239,6 +240,6 @@ Gdy przez kilka tygodni nie ma tam niczego niepokojącego, zbuduj stronę z `CSP
 | API: „Your PHP version … ≥ 8.3” | w panelu ustaw PHP 8.3+ dla domeny API |
 | API: biała strona z listą plików albo pobiera się `.env` | `public_html` nie wskazuje na `repo/api/public` (krok 3) |
 | Formularz: „The message could not be sent”, w konsoli przeglądarki błąd CORS | `CORS_ALLOWED_ORIGINS` w `api/.env` musi zawierać `https://rafalgryncewicz.com`, potem `config:cache` |
-| Zapytania się zapisują, ale mail nie przychodzi | `$PHP artisan tinker` → `Mail::raw('test', fn($m) => $m->to('…'))` pokaże błąd SMTP; sprawdź `MAIL_*` i `CONTACT_RECIPIENT` |
+| Zapytania się zapisują, ale mail nie przychodzi | `$PHP artisan leads:renotify` wyśle zaległe od razu; `$PHP artisan tinker` → `Mail::raw('test', fn($m) => $m->to('…'))` pokaże błąd SMTP; sprawdź `MAIL_*` i `CONTACT_RECIPIENT` |
 | Strona: `/privacy` przekierowuje na `/privacy/` | nie wgrał się `.htaccess` (ukryty plik w FTP) |
 | Wszyscy dostają „Too many requests” | API za proxy/Cloudflare bez `TRUSTED_PROXIES` (wszystkie żądania mają ten sam IP) |
