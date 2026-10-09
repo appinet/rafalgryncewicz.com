@@ -82,6 +82,13 @@ export default defineNuxtConfig({
   },
 
   hooks: {
+    // An empty endpoint is valid (the form opens the visitor's mail app), but in a production build it is
+    // almost always a missing web/.env, and the form would silently stop reaching the API
+    ready: (nuxt) => {
+      if (nuxt.options.dev || process.env.NUXT_PUBLIC_FORM_ENDPOINT || nuxt.options.runtimeConfig.public.formEndpoint) return
+      console.warn('\n⚠ NUXT_PUBLIC_FORM_ENDPOINT is empty: the contact form will open the visitor\'s mail app instead of '
+        + 'sending to the API.\n  Set it in web/.env (see .env.example) unless that is intended.\n')
+    },
     // Don't preload/prefetch JS chunks: the HTML is fully rendered, JS is only needed for interactivity.
     // Keeps the network free for HTML + fonts during first paint.
     'build:manifest': (manifest) => {
