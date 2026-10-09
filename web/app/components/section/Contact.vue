@@ -129,6 +129,9 @@ function showServerError(status: number | undefined, errors: Record<string, stri
 
 const fieldUi = { label: 'text-zinc-300 text-sm', error: 'text-red-400 text-xs', hint: 'text-zinc-400' }
 const inputUi = { base: 'bg-white/[0.03] ring-white/10 text-white placeholder:text-zinc-400 focus-visible:ring-emerald-400/70 py-2.5' }
+// An open select locks page scroll by default: the scrollbar disappears and the fixed header jumps
+// sideways by its width. The dropdown is a popper that follows its field, so scrolling can stay on.
+const selectContent = { bodyLock: false }
 </script>
 
 <template>
@@ -187,16 +190,16 @@ const inputUi = { base: 'bg-white/[0.03] ring-white/10 text-white placeholder:te
             <UInput id="cf-company" v-model="state.company" :aria-label="c.fields.company" autocomplete="organization" :placeholder="c.fields.companyPh" size="lg" class="w-full" :ui="inputUi" />
           </UFormField>
           <UFormField :eager-validation="attempted" :label="c.fields.clientType" name="clientType" :ui="fieldUi">
-            <USelect id="cf-clientType" v-model="state.clientType" :aria-label="c.fields.clientType" :items="c.options.clientTypes" :placeholder="c.fields.select" size="lg" class="w-full" :ui="inputUi" />
+            <USelect id="cf-clientType" v-model="state.clientType" :aria-label="c.fields.clientType" :items="c.options.clientTypes" :placeholder="c.fields.select" size="lg" class="w-full" :content="selectContent" :ui="inputUi" />
           </UFormField>
           <UFormField :eager-validation="attempted" :label="c.fields.projectType" name="projectType" required class="sm:col-span-2" :ui="fieldUi">
-            <USelect id="cf-projectType" v-model="state.projectType" :aria-label="c.fields.projectType" :items="c.options.projectTypes" :placeholder="c.fields.projectPh" size="lg" class="w-full" :ui="inputUi" />
+            <USelect id="cf-projectType" v-model="state.projectType" :aria-label="c.fields.projectType" :items="c.options.projectTypes" :placeholder="c.fields.projectPh" size="lg" class="w-full" :content="selectContent" :ui="inputUi" />
           </UFormField>
           <UFormField :eager-validation="attempted" :label="c.fields.budget" name="budget" :ui="fieldUi">
-            <USelect id="cf-budget" v-model="state.budget" :aria-label="c.fields.budget" :items="c.options.budgets" :placeholder="c.fields.select" size="lg" class="w-full" :ui="inputUi" />
+            <USelect id="cf-budget" v-model="state.budget" :aria-label="c.fields.budget" :items="c.options.budgets" :placeholder="c.fields.select" size="lg" class="w-full" :content="selectContent" :ui="inputUi" />
           </UFormField>
           <UFormField :eager-validation="attempted" :label="c.fields.timeline" name="timeline" :ui="fieldUi">
-            <USelect id="cf-timeline" v-model="state.timeline" :aria-label="c.fields.timeline" :items="c.options.timelines" :placeholder="c.fields.select" size="lg" class="w-full" :ui="inputUi" />
+            <USelect id="cf-timeline" v-model="state.timeline" :aria-label="c.fields.timeline" :items="c.options.timelines" :placeholder="c.fields.select" size="lg" class="w-full" :content="selectContent" :ui="inputUi" />
           </UFormField>
           <UFormField :eager-validation="attempted" :label="c.fields.message" name="message" required class="sm:col-span-2" :ui="fieldUi">
             <UTextarea id="cf-message" v-model="state.message" :aria-label="c.fields.message" :rows="5" autoresize :placeholder="c.fields.messagePh" size="lg" class="w-full" :ui="inputUi" />
