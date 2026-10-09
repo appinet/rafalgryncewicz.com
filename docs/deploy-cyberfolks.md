@@ -128,6 +128,9 @@ MAIL_FROM_NAME="rafalgryncewicz.com"
 MAIL_TIMEOUT=10                 # sekundy; po tym czasie formularz i tak zapisze zapytanie
 
 CONTACT_RECIPIENT=hello@rafalgryncewicz.com   # dokąd idą zapytania (wymagane)
+CONTACT_CONFIRMATION=true                     # automatyczna odpowiedź do klienta (max 1 na adres na dobę)
+CONTACT_SIGNATURE="Rafał Gryncewicz"
+CONTACT_SITE_URL=https://rafalgryncewicz.com
 CONTACT_RATE_PER_MINUTE=3
 CONTACT_RATE_PER_DAY=20
 CONTACT_RETENTION_MONTHS=36

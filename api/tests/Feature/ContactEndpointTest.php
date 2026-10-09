@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\LeadConfirmationMail;
 use App\Mail\NewLeadMail;
 use App\Models\Lead;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,6 +43,50 @@ class ContactEndpointTest extends TestCase
         $this->assertNotNull($lead->privacy_accepted_at);
         $this->assertNotNull($lead->notified_at);
         Mail::assertSent(NewLeadMail::class, fn ($mail) => $mail->hasTo(config('contact.recipient')) && $mail->hasReplyTo('jane@example.com'));
+    }
+
+    public function test_visitor_gets_a_confirmation_in_their_language(): void
+    {
+        Mail::fake();
+
+        $this->postJson('/api/contact', $this->payload(['locale' => 'pl']))->assertCreated();
+
+        Mail::assertSent(LeadConfirmationMail::class, function ($mail) {
+            $html = $mail->render();
+
+            return $mail->hasTo('jane@example.com')
+                && $mail->hasReplyTo(config('contact.recipient'))
+                && $mail->hasSubject('Dziękuję za wiadomość')
+                && str_contains($html, 'rafalgryncewicz.com')
+                && ! str_contains($html, 'api.')
+                // Nothing the visitor typed, so the form cannot send someone else's spam
+                && ! str_contains($html, 'Jane Tester')
+                && ! str_contains($html, 'PrestaShop');
+        });
+    }
+
+    public function test_confirmation_is_sent_once_per_address_per_day(): void
+    {
+        Mail::fake();
+
+        $this->postJson('/api/contact', $this->payload())->assertCreated();
+        $this->postJson('/api/contact', $this->payload(['email' => 'JANE@example.com']))->assertCreated();
+        $this->postJson('/api/contact', $this->payload(['email' => 'john@example.com']))->assertCreated();
+
+        Mail::assertSent(NewLeadMail::class, 3);
+        Mail::assertSent(LeadConfirmationMail::class, 2);
+        Mail::assertSent(LeadConfirmationMail::class, fn ($mail) => $mail->hasTo('john@example.com'));
+    }
+
+    public function test_confirmation_can_be_switched_off(): void
+    {
+        Mail::fake();
+        config(['contact.confirmation' => false]);
+
+        $this->postJson('/api/contact', $this->payload())->assertCreated();
+
+        Mail::assertSent(NewLeadMail::class);
+        Mail::assertNotSent(LeadConfirmationMail::class);
     }
 
     public function test_invalid_enquiry_is_rejected(): void

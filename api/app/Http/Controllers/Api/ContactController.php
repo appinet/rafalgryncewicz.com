@@ -30,6 +30,7 @@ class ContactController extends Controller
 
         // A failed mail is retried by `leads:renotify`, so the visitor still gets a success response
         $lead->sendNotification();
+        $lead->sendConfirmation();
 
         return response()->json(['ok' => true, 'id' => $lead->id], 201);
     }
